@@ -1,5 +1,3 @@
-# Secure Communication Module Documentation
-
 ## Overview
 
 The `SecureCommunication` module provides a secure communication protocol leveraging cryptographic techniques such as Elliptic Curve Diffie-Hellman (ECDH) key exchange, AES-256-GCM encryption, SHA-3-512 hashing, and SHA-256 digital signatures. It aims to ensure confidentiality, integrity, and authenticity of data exchanged between communicating parties.
