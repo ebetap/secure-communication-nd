@@ -1,127 +1,180 @@
-### Konsep dan Latar Belakang
+### SecureCommunication Class
 
-**Quantum Key Distribution (QKD)**: 
-QKD adalah teknik kriptografi yang memanfaatkan prinsip-prinsip fisika kuantum untuk mengamankan pertukaran kunci antara dua pihak. QKD menjamin keamanan dengan memanfaatkan sifat qubit yang tidak dapat disalin atau diukur tanpa mengganggu statusnya.
+The `SecureCommunication` class provides secure communication between two parties using modern cryptographic techniques in Node.js. It includes key exchange, encryption, decryption, hashing, signing, and signature verification to ensure data confidentiality, integrity, and authenticity.
 
-**AES (Advanced Encryption Standard)**:
-AES adalah algoritma enkripsi simetris yang digunakan secara luas untuk mengamankan data. Ini menggunakan kunci yang sama untuk enkripsi dan dekripsi.
+### Concept
 
-**SHA-3**:
-SHA-3 adalah keluarga fungsi hash kriptografi yang dirancang untuk menghasilkan output hash yang aman dari data input.
+The concept behind `SecureCommunication` revolves around using a combination of symmetric and asymmetric cryptography for secure communication:
 
-**ECC (Elliptic Curve Cryptography)**:
-ECC adalah teknik kriptografi yang didasarkan pada struktur matematika kurva eliptik, memungkinkan enkripsi yang kuat dengan kunci yang lebih kecil dibandingkan algoritma non-ECC seperti RSA.
+1. **Key Exchange**: 
+   - **ECDH (Elliptic Curve Diffie-Hellman)** is used to establish a shared secret key between two parties.
+   - **Quantum Key Distribution (QKD) principles** are simulated using random bit generation and comparison to derive a shared secret.
 
-### Flow Kriptografi Terintegrasi
+2. **Encryption**:
+   - **AES-256-GCM** (Advanced Encryption Standard in Galois/Counter Mode) is used for symmetric encryption of data.
+   - AES provides confidentiality (encryption) and integrity (through the use of the Authentication Tag).
 
-1. **Pertukaran Kunci Kuantum (QKD)**
-   - Alice (pengirim) mengirimkan qubit ke Bob (penerima).
-   - Bob mengukur qubit dengan basis yang dipilih secara acak.
-   - Alice dan Bob membandingkan basis pengukuran dan menyimpan bit yang cocok.
-   - Kunci simetris (AES) dibuat dari bit yang dipertukarkan.
+3. **Hashing**:
+   - **SHA3-512** is used for hashing data to ensure data integrity.
 
-2. **Enkripsi Data**
-   - Data dienkripsi menggunakan AES dengan kunci yang telah dipertukarkan.
+4. **Signing**:
+   - **SHA-256** is used for signing data to ensure data authenticity and non-repudiation.
 
-3. **Integritas Data**
-   - Hash data terenkripsi dihasilkan menggunakan SHA-3.
+5. **Sending and Receiving Data**:
+   - Data is encrypted, hashed, and signed before sending.
+   - Upon receiving, the signature is verified, and then the data is decrypted and processed.
 
-4. **Tanda Tangan Digital**
-   - Hash dari data terenkripsi ditandatangani menggunakan kunci privat ECC untuk menjamin integritas dan autentikasi.
+### Flow
 
-5. **Pengiriman dan Penerimaan Data**
-   - Data terenkripsi, vektor inisialisasi, tag autentikasi, hash, tanda tangan digital, dan kunci publik dikirim ke penerima.
-   - Penerima memverifikasi tanda tangan digital dan mendekripsi data jika verifikasi berhasil.
+The flow of communication between two parties using `SecureCommunication` involves the following steps:
 
-### Dokumentasi API
+1. **Initialization**:
+   - Create an instance of `SecureCommunication`.
+   - Initialize the class, which generates a key pair for ECDH and initializes necessary parameters.
 
-#### Class: `SecureCommunication`
+2. **Key Exchange**:
+   - Call `exchangeKeys()` to simulate the key exchange process:
+     - Generate random bits and bases for Alice.
+     - Generate random bases for Bob.
+     - Calculate shared key bits using Quantum Key Distribution principles.
+     - Derive AES key from shared key bits.
 
-##### Constructor
-- `constructor()`
-  - Inisialisasi instance dengan pembuatan kunci ECC dan pengaturan algoritma SHA-3.
+3. **Data Sending**:
+   - Encrypt data using `encryptData(data)`.
+   - Hash encrypted data using `hashData(data)`.
+   - Sign hashed data using `signData(data)`.
+   - Package data and necessary parameters (encrypted data, IV, authTag, hash, signature, public key).
 
-##### Methods
+4. **Data Receiving**:
+   - Receive data package containing (encrypted data, IV, authTag, hash, signature, public key).
+   - Verify signature using `verifySignature(data, signature, publicKey)`.
+   - Decrypt data using `decryptData(encrypted, iv, authTag)`.
 
-- `async exchangeKeys()`
-  - Pertukaran kunci menggunakan metode Quantum Key Distribution (disimulasikan).
-  - **Returns**: `Promise<void>`
+5. **Cleanup**:
+   - Clear sensitive data using `clearSensitiveData()`.
 
-- `encryptData(data: string): { encrypted: string, iv: string, authTag: string }`
-  - Enkripsi data menggunakan AES-256-GCM.
-  - **Parameters**: 
-    - `data` (string): Data yang akan dienkripsi.
-  - **Returns**: Object dengan properti `encrypted`, `iv`, dan `authTag`.
+### Full Documentation
 
-- `decryptData(encrypted: string, iv: string, authTag: string): string`
-  - Dekripsi data menggunakan AES-256-GCM.
-  - **Parameters**:
-    - `encrypted` (string): Data terenkripsi.
-    - `iv` (string): Inisialisasi vektor.
-    - `authTag` (string): Authentication tag.
-  - **Returns**: Data yang didekripsi (string).
+#### Class: SecureCommunication
 
-- `hashData(data: string): string`
-  - Membuat hash dari data menggunakan SHA-3.
-  - **Parameters**:
-    - `data` (string): Data yang akan di-hash.
-  - **Returns**: Hash dari data (string).
+**Constructor: SecureCommunication()**
 
-- `signData(hash: string): string`
-  - Membuat tanda tangan digital dari hash menggunakan ECC.
-  - **Parameters**:
-    - `hash` (string): Hash dari data.
-  - **Returns**: Tanda tangan digital (string).
+Initializes the `SecureCommunication` instance.
 
-- `verifySignature(hash: string, signature: string, publicKey: string): boolean`
-  - Memverifikasi tanda tangan digital menggunakan ECC.
-  - **Parameters**:
-    - `hash` (string): Hash dari data.
-    - `signature` (string): Tanda tangan digital.
-    - `publicKey` (string): Kunci publik untuk verifikasi.
-  - **Returns**: Status verifikasi (boolean).
+**Properties:**
 
-- `sendData(data: string): { encrypted: string, iv: string, authTag: string, hash: string, signature: string, publicKey: string }`
-  - Menggabungkan enkripsi data, hash, dan tanda tangan digital untuk pengiriman.
-  - **Parameters**:
-    - `data` (string): Data yang akan dikirim.
-  - **Returns**: Object dengan properti `encrypted`, `iv`, `authTag`, `hash`, `signature`, dan `publicKey`.
+- `aesKey`: AES key used for symmetric encryption.
+- `ecdh`: ECDH object for key exchange.
+- `privateKey`: Private key for ECDH.
+- `publicKey`: Public key for ECDH.
+- `algorithmAES`: Algorithm used for AES encryption (`aes-256-gcm`).
+- `algorithmHash`: Algorithm used for hashing (`sha3-512`).
+- `algorithmSign`: Algorithm used for signing (`sha256`).
 
-- `receiveData({ encrypted, iv, authTag, hash, signature, publicKey }): string`
-  - Menerima, memverifikasi, dan mendekripsi data.
-  - **Parameters**: 
-    - `encrypted` (string): Data terenkripsi.
-    - `iv` (string): Inisialisasi vektor.
-    - `authTag` (string): Authentication tag.
-    - `hash` (string): Hash dari data terenkripsi.
-    - `signature` (string): Tanda tangan digital.
-    - `publicKey` (string): Kunci publik untuk verifikasi.
-  - **Returns**: Data yang didekripsi (string).
+**Methods:**
 
-### Penggunaan Modul
+- **generateKeyPair()**
+  - Generates ECDH key pair (private and public keys).
+
+- **exchangeKeys()**
+  - Simulates key exchange process using Quantum Key Distribution principles.
+  - Derives AES key from shared key bits.
+
+- **generateRandomBits(length)**
+  - Generates random bits for key exchange and comparison.
+
+- **measureQubits(aliceBits, aliceBases, bobBases)**
+  - Measures qubits to determine shared key bits.
+
+- **compareBases(aliceBases, bobBases, aliceBits, bobBits)**
+  - Compares bases to generate shared key bits.
+
+- **deriveAesKey(sharedKeyBits)**
+  - Derives AES key from shared key bits.
+
+- **encryptData(data)**
+  - Encrypts data using AES-256-GCM.
+  - Returns encrypted data, IV, and authTag.
+
+- **decryptData(encrypted, iv, authTag)**
+  - Decrypts encrypted data using AES-256-GCM.
+
+- **hashData(data)**
+  - Hashes data using SHA3-512.
+
+- **signData(data)**
+  - Signs data using SHA-256 and private key.
+
+- **verifySignature(data, signature, publicKey)**
+  - Verifies signature using SHA-256 and public key.
+
+- **sendData(data)**
+  - Sends data securely: encrypts, hashes, signs, and packages data.
+
+- **receiveData(dataPackage)**
+  - Receives and processes data: verifies signature, decrypts data.
+
+- **clearSensitiveData()**
+  - Clears sensitive data (AES key, etc.) from memory.
+
+**Usage:**
 
 ```javascript
-import SecureCommunication from './secureCommunication';
+import SecureCommunication from './SecureCommunication';
 
-(async () => {
-  const sender = new SecureCommunication();
-  const receiver = new SecureCommunication();
+async function main() {
+  const secureComm = new SecureCommunication();
 
-  // Pertukaran kunci antara pengirim dan penerima
-  await sender.exchangeKeys();
-  receiver.aesKey = sender.aesKey; // Pertukaran kunci AES untuk contoh ini
+  // Exchange keys
+  await secureComm.exchangeKeys();
 
-  // Data yang akan dikirim
-  const data = "Hello, this is a secure message.";
-  const encryptedData = sender.sendData(data);
-  console.log('Encrypted Data:', encryptedData);
+  // Simulate sending data
+  const dataToSend = 'Sensitive data to be sent securely';
+  const secureData = await secureComm.sendData(dataToSend);
+  console.log('Secure data to be sent:', secureData);
 
-  // Menerima dan mendekripsi data
-  const decryptedData = receiver.receiveData(encryptedData);
-  console.log('Decrypted Data:', decryptedData);
-})();
+  // Simulate receiving data
+  const receivedData = await secureComm.receiveData(secureData);
+  console.log('Received and decrypted data:', receivedData);
+
+  // Clear sensitive data from the instance
+  secureComm.clearSensitiveData();
+}
+
+main().catch(err => console.error('Error in main:', err));
 ```
 
-### Kesimpulan
+### How to Use
 
-Modul ini mengintegrasikan berbagai teknik kriptografi untuk menjamin keamanan data saat dikirim melalui jaringan yang tidak aman. Menggunakan Quantum Key Distribution (QKD) untuk pertukaran kunci yang aman, AES untuk enkripsi data, SHA-3 untuk integritas data, dan ECC untuk tanda tangan digital, modul ini menawarkan solusi kriptografi yang komprehensif dan aman.
+1. **Initialization**:
+   - Import the `SecureCommunication` class.
+   - Create an instance of `SecureCommunication`.
+
+2. **Key Exchange**:
+   - Call `exchangeKeys()` to simulate the key exchange process.
+
+3. **Sending Data**:
+   - Use `sendData(data)` to encrypt, hash, sign, and package data for sending.
+
+4. **Receiving Data**:
+   - Use `receiveData(dataPackage)` to verify signature, decrypt, and process received data.
+
+5. **Cleanup**:
+   - Always clear sensitive data using `clearSensitiveData()` after use.
+
+### Security Considerations
+
+- Ensure that sensitive data (AES keys, shared secret bits) are cleared from memory using `crypto.randomFillSync` after use.
+- Proper error handling ensures that no sensitive information is leaked.
+- Use modern cryptographic algorithms and principles to maintain strong security.
+
+### Error Handling
+
+- Errors are caught and rethrown with meaningful messages to avoid leaking sensitive information.
+- Proper error handling ensures that applications can gracefully handle exceptions.
+
+### Conclusion
+
+The `SecureCommunication` class provides a robust framework for implementing secure communication using Node.js. By leveraging modern cryptographic techniques, it ensures confidentiality, integrity, authenticity, and non-repudiation of data exchanged between two parties.
+
+This documentation provides a comprehensive guide on the concept, flow, usage, and security considerations of the `SecureCommunication` class. Adjustments and further enhancements can be made based on specific security requirements or performance considerations.
