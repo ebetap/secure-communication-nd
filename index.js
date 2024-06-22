@@ -91,3 +91,5 @@ class SecureCommunication {
     return decrypted;
   }
 }
+
+export default SecureCommunication
