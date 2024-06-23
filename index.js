@@ -5,22 +5,22 @@ const ALGORITHM_HASH = 'sha3-512';
 const ALGORITHM_SIGN = 'sha256';
 
 class SecureCommunication {
-  constructor() {
-    this.aesKey = null;
-    this.ecdh = crypto.createECDH('secp256k1');
-    this.privateKey = null;
-    this.publicKey = null;
-    this.algorithmAES = ALGORITHM_AES;
-    this.algorithmHash = ALGORITHM_HASH;
-    this.algorithmSign = ALGORITHM_SIGN;
+  #aesKey = null;
+  #ecdh = crypto.createECDH('secp256k1');
+  #privateKey = null;
+  #publicKey = null;
+  #algorithmAES = ALGORITHM_AES;
+  #algorithmHash = ALGORITHM_HASH;
+  #algorithmSign = ALGORITHM_SIGN;
 
+  constructor() {
     this.generateKeyPair();
   }
 
   generateKeyPair() {
     try {
-      this.privateKey = this.ecdh.generateKeys('hex', 'compressed');
-      this.publicKey = this.ecdh.getPublicKey('hex', 'compressed');
+      this.#privateKey = this.#ecdh.generateKeys('hex', 'compressed');
+      this.#publicKey = this.#ecdh.getPublicKey('hex', 'compressed');
     } catch (error) {
       console.error('Error generating key pair:', error.message);
       throw new Error('Error generating key pair');
@@ -36,7 +36,7 @@ class SecureCommunication {
       const bobBits = this.measureQubits(aliceBits, aliceBases, bobBases);
       const sharedKeyBits = this.compareBases(aliceBases, bobBases, aliceBits, bobBits);
 
-      this.aesKey = await this.deriveAesKey(sharedKeyBits);
+      this.#aesKey = await this.deriveAesKey(sharedKeyBits);
 
       // Clear sensitive data
       this.clearSensitiveData();
@@ -79,7 +79,7 @@ class SecureCommunication {
       }
 
       const iv = crypto.randomBytes(16);
-      const cipher = crypto.createCipheriv(this.algorithmAES, this.aesKey, iv);
+      const cipher = crypto.createCipheriv(this.#algorithmAES, this.#aesKey, iv);
 
       let encrypted = cipher.update(data, 'utf8', 'hex');
       encrypted += cipher.final('hex');
@@ -97,7 +97,7 @@ class SecureCommunication {
 
   async decryptData(encrypted, iv, authTag) {
     try {
-      const decipher = crypto.createDecipheriv(this.algorithmAES, this.aesKey, Buffer.from(iv, 'hex'));
+      const decipher = crypto.createDecipheriv(this.#algorithmAES, this.#aesKey, Buffer.from(iv, 'hex'));
       decipher.setAuthTag(Buffer.from(authTag, 'hex'));
 
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
@@ -114,7 +114,7 @@ class SecureCommunication {
 
   hashData(data) {
     try {
-      return crypto.createHash(this.algorithmHash).update(data).digest('hex');
+      return crypto.createHash(this.#algorithmHash).update(data).digest('hex');
     } catch (error) {
       console.error('Error during hashing:', error.message);
       throw new Error('Error during hashing');
@@ -123,10 +123,10 @@ class SecureCommunication {
 
   signData(data) {
     try {
-      const sign = crypto.createSign(this.algorithmSign);
+      const sign = crypto.createSign(this.#algorithmSign);
       sign.update(data);
       sign.end();
-      const signature = sign.sign(this.privateKey, 'hex');
+      const signature = sign.sign(this.#privateKey, 'hex');
       sign.end();
 
       return signature;
@@ -138,7 +138,7 @@ class SecureCommunication {
 
   verifySignature(data, signature, publicKey) {
     try {
-      const verify = crypto.createVerify(this.algorithmSign);
+      const verify = crypto.createVerify(this.#algorithmSign);
       verify.update(data);
       verify.end();
       const verified = verify.verify(publicKey, signature, 'hex');
@@ -165,7 +165,7 @@ class SecureCommunication {
         authTag,
         hash,
         signature,
-        publicKey: this.publicKey,
+        publicKey: this.#publicKey,
       };
     } catch (error) {
       console.error('Error preparing data for sending:', error.message);
@@ -192,9 +192,9 @@ class SecureCommunication {
   }
 
   clearSensitiveData() {
-    crypto.randomFillSync(this.aesKey);
-    this.privateKey = null;
-    this.ecdh = null;
+    crypto.randomFillSync(this.#aesKey);
+    this.#privateKey = null;
+    this.#ecdh = null;
   }
 }
 
