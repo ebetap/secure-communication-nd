@@ -1,110 +1,153 @@
-## Overview
+### SecureCommunication Class
 
-The `SecureCommunication` module provides a secure communication protocol leveraging cryptographic techniques such as Elliptic Curve Diffie-Hellman (ECDH) key exchange, AES-256-GCM encryption, SHA-3-512 hashing, and SHA-256 digital signatures. It aims to ensure confidentiality, integrity, and authenticity of data exchanged between communicating parties.
+The `SecureCommunication` class implements a secure communication protocol using asymmetric (ECDH) and symmetric (AES-GCM) encryption, along with hashing and digital signatures for data integrity and authenticity.
 
-### Key Features
+#### Imports and Constants
 
-- **Key Exchange:** Uses ECDH to establish a shared secret key between parties.
-- **Encryption:** Utilizes AES-256-GCM for symmetric encryption of data.
-- **Hashing:** Applies SHA-3-512 for hashing data to ensure integrity.
-- **Signing:** Implements SHA-256 digital signatures to provide data authenticity.
-- **Secure Data Transmission:** Facilitates secure data exchange with encryption, hashing, and signing mechanisms.
+- **Imports**: Imports `crypto` module from Node.js standard library for cryptographic operations.
+- **Constants**:
+  - `ALGORITHM_AES`: Specifies AES encryption with 256-bit key in Galois Counter Mode (GCM).
+  - `ALGORITHM_HASH`: Specifies SHA3-512 hashing algorithm for data integrity.
+  - `ALGORITHM_SIGN`: Specifies SHA-256 for digital signature generation and verification.
 
-## Concepts
-
-### 1. ECDH Key Exchange
-
-Elliptic Curve Diffie-Hellman (ECDH) is used to securely exchange cryptographic keys over an insecure channel. It allows two parties to generate a shared secret key without transmitting it directly.
-
-### 2. AES-256-GCM Encryption
-
-Advanced Encryption Standard (AES) with a key size of 256 bits in Galois/Counter Mode (GCM) provides authenticated encryption. It ensures both confidentiality and integrity of data.
-
-### 3. SHA-3-512 Hashing
-
-Secure Hash Algorithm 3 (SHA-3) with a hash size of 512 bits generates a unique fixed-size hash value from input data. It verifies data integrity by detecting any modifications.
-
-### 4. SHA-256 Digital Signatures
-
-SHA-256 is used for creating digital signatures, which are used to verify the authenticity and integrity of data. The private key signs data, and the corresponding public key verifies the signature.
-
-## Flow
-
-### Initialization
-
-1. **Constructor Initialization:**
-   - Initializes AES encryption algorithm (`'aes-256-gcm'`), hash algorithm (`'sha3-512'`), and signature algorithm (`'sha256'`).
-   - Generates ECDH key pair (`privateKey` and `publicKey`) using the secp256k1 curve.
-
-2. **Key Exchange (`exchangeKeys()` Method):**
-   - Generates random bits and bases for Alice and Bob.
-   - Measures qubits and compares bases to derive a shared secret key (`aesKey`) using Quantum Key Distribution principles.
-   - Derives AES encryption key (`aesKey`) from the shared secret key bits.
-
-### Data Transmission
-
-3. **Data Encryption (`encryptData(data)` Method):**
-   - Encrypts input data (`data`) using AES-256-GCM.
-   - Generates a random Initialization Vector (IV).
-   - Computes authentication tag for integrity verification.
-
-4. **Data Hashing and Signing (`sendData(data)` Method):**
-   - Hashes encrypted data using SHA-3-512 to create a hash (`hash`).
-   - Signs the hash using SHA-256 and the module's private key (`privateKey`) to generate a digital signature (`signature`).
-
-5. **Data Decryption and Verification (`receiveData(data)` Method):**
-   - Verifies the digital signature (`signature`) using the sender's public key (`publicKey`).
-   - Decrypts encrypted data (`encrypted`) using AES-256-GCM and the received IV and authentication tag.
-
-### Cleanup
-
-6. **Sensitive Data Management (`clearSensitiveData()` Method):**
-   - Clears sensitive data such as `aesKey` and `privateKey` securely after use using cryptographic techniques.
-
-## Usage
-
-### Installation
-
-Ensure Node.js and npm are installed. Install the required dependencies:
-
-```bash
-npm install crypto
-```
-
-### Example Usage
+#### Class Definition
 
 ```javascript
-import SecureCommunication from './SecureCommunication'; // Assuming file location
+import crypto from 'crypto';
 
-async function secureCommunicationExample() {
+const ALGORITHM_AES = 'aes-256-gcm';
+const ALGORITHM_HASH = 'sha3-512';
+const ALGORITHM_SIGN = 'sha256';
+
+class SecureCommunication {
+  // Private fields using #
+  #aesKey = null;
+  #ecdh = crypto.createECDH('secp256k1');
+  #privateKey = null;
+  #publicKey = null;
+  #algorithmAES = ALGORITHM_AES;
+  #algorithmHash = ALGORITHM_HASH;
+  #algorithmSign = ALGORITHM_SIGN;
+
+  // Constructor initializes key pair generation
+  constructor() {
+    this.generateKeyPair();
+  }
+
+  // Methods defined below...
+}
+```
+
+#### Constructor (`constructor()`)
+
+- **Purpose**: Initializes the `SecureCommunication` object by generating a new key pair (`privateKey` and `publicKey`) using Elliptic Curve Diffie-Hellman (ECDH) with the `secp256k1` curve.
+
+#### Methods
+
+1. **`generateKeyPair()`**
+
+   - **Purpose**: Generates a new ECDH key pair.
+   - **Usage**: Called during object instantiation.
+
+2. **`exchangeKeys()`**
+
+   - **Purpose**: Executes the key exchange process using Quantum Key Distribution (QKD) principles.
+   - **Steps**:
+     - Generates random bits and bases for Alice and Bob.
+     - Measures qubits and compares bases to derive a shared key.
+     - Derives an AES encryption key (`aesKey`) using the shared key.
+     - Clears sensitive data after key exchange.
+
+3. **`generateRandomBits(length)`**
+
+   - **Purpose**: Generates random bits of specified length.
+   - **Usage**: Used in `exchangeKeys()` for QKD.
+
+4. **`measureQubits(aliceBits, aliceBases, bobBases)`**
+
+   - **Purpose**: Simulates qubit measurement based on shared bases during QKD.
+
+5. **`compareBases(aliceBases, bobBases, aliceBits, bobBits)`**
+
+   - **Purpose**: Compares bases and bits to derive the shared key during QKD.
+
+6. **`deriveAesKey(sharedKeyBits)`**
+
+   - **Purpose**: Derives an AES encryption key from shared key bits.
+   - **Usage**: Used in `exchangeKeys()`.
+
+7. **`encryptData(data)`**
+
+   - **Purpose**: Encrypts provided data using AES-GCM encryption.
+   - **Returns**: Object containing `encrypted` data, initialization vector (`iv`), and authentication tag (`authTag`).
+
+8. **`decryptData(encrypted, iv, authTag)`**
+
+   - **Purpose**: Decrypts AES-GCM encrypted data.
+   - **Parameters**: `encrypted` data, `iv`, `authTag`.
+   - **Returns**: Decrypted plaintext.
+
+9. **`hashData(data)`**
+
+   - **Purpose**: Hashes data using SHA3-512 algorithm.
+   - **Returns**: Hexadecimal digest of the hash.
+
+10. **`signData(data)`**
+
+    - **Purpose**: Signs data using SHA-256 with the object's private key.
+    - **Returns**: Hexadecimal signature of the data.
+
+11. **`verifySignature(data, signature, publicKey)`**
+
+    - **Purpose**: Verifies the authenticity of signed data using the provided public key.
+    - **Returns**: `true` if the signature is valid, otherwise `false`.
+
+12. **`sendData(data)`**
+
+    - **Purpose**: Prepares data for sending by encrypting, hashing, and signing.
+    - **Returns**: Object containing encrypted data, `iv`, `authTag`, `hash`, `signature`, and `publicKey`.
+
+13. **`receiveData({ encrypted, iv, authTag, hash, signature, publicKey })`**
+
+    - **Purpose**: Receives and processes incoming data, verifying its integrity and authenticity before decrypting.
+    - **Parameters**: Object containing encrypted data, `iv`, `authTag`, `hash`, `signature`, and `publicKey`.
+    - **Returns**: Decrypted plaintext.
+
+14. **`clearSensitiveData()`**
+
+    - **Purpose**: Clears sensitive data such as `aesKey` and `privateKey` from memory securely.
+
+#### Usage Example
+
+```javascript
+// Usage Example
+import SecureCommunication from './SecureCommunication';
+
+async function main() {
+  const secureComm = new SecureCommunication();
+
+  // Alice sends data to Bob
+  const dataToSend = "Hello, Bob!";
+  const preparedData = await secureComm.sendData(dataToSend);
+
+  // Bob receives and processes data
   try {
-    const secureComm = new SecureCommunication();
-
-    // Alice sends data to Bob
-    await secureComm.exchangeKeys();
-    const dataToSend = 'Hello, Bob!';
-    const encryptedPackage = await secureComm.sendData(dataToSend);
-
-    // Bob receives and processes data from Alice
-    const decryptedData = await secureComm.receiveData(encryptedPackage);
-    console.log('Decrypted data:', decryptedData);
+    const decryptedData = await secureComm.receiveData(preparedData);
+    console.log("Decrypted Data:", decryptedData);
   } catch (error) {
-    console.error('Error in secure communication:', error.message);
+    console.error("Error receiving data:", error.message);
   }
 }
 
-secureCommunicationExample();
+main();
 ```
 
-### Notes
+### Summary
 
-- Ensure proper error handling and testing for robustness.
-- Review and update cryptographic algorithms periodically to adhere to security best practices.
+The `SecureCommunication` class encapsulates a robust mechanism for secure communication:
+- Key exchange using ECDH and QKD principles.
+- AES-GCM encryption for data confidentiality.
+- SHA3-512 hashing for data integrity.
+- SHA-256 digital signatures for data authenticity.
 
-## Conclusion
-
-The `SecureCommunication` module provides a robust framework for secure data exchange using modern cryptographic techniques. It aims to protect data confidentiality, integrity, and authenticity, ensuring secure communication between parties.
-
----
-
-This documentation covers the concepts, flow, and usage guidelines for integrating and utilizing the `SecureCommunication` module effectively in secure communication applications. Adjustments and enhancements may be necessary based on specific security requirements and updates in cryptographic standards.
+This class provides a comprehensive framework for secure data transmission and ensures end-to-end security in communication scenarios.
